@@ -1,7 +1,7 @@
 //! A simple global allocator which hooks into `libc`.
 //! Useful when linking `no_std` + `alloc` code into existing embedded C code.
 //!
-//! Uses `posix_memalign` for allocations, `realloc` for reallocations, and
+//! Uses `aligned_alloc` for allocations, `realloc` for reallocations, and
 //! `free` for deallocations.
 //!
 //! ## Example
@@ -19,7 +19,7 @@ use core::alloc::{GlobalAlloc, Layout};
 use core::ffi::c_void;
 use core::ptr;
 
-#[cfg(target_family = "unix")]
+#[cfg(not(target_family = "windows"))]
 mod libc;
 
 #[cfg(target_family = "windows")]
@@ -28,21 +28,11 @@ mod win_crt;
 /// Global Allocator which hooks into libc to allocate / free memory.
 pub struct LibcAlloc;
 
-#[cfg(target_family = "unix")]
+#[cfg(not(target_family = "windows"))]
 unsafe impl GlobalAlloc for LibcAlloc {
     #[inline]
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        let mut ptr = ptr::null_mut();
-        let ret = libc::posix_memalign(
-            &mut ptr,
-            layout.align().max(core::mem::size_of::<usize>()),
-            layout.size(),
-        );
-        if ret == 0 {
-            ptr as *mut u8
-        } else {
-            ptr::null_mut()
-        }
+        libc::aligned_alloc(layout.align(), layout.size()).cast()
     }
 
     #[inline]
