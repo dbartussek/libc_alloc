@@ -14,6 +14,6 @@ pub type size_t = usize;
 
 extern "C" {
     pub fn free(p: *mut c_void);
-    pub fn aligned_alloc(align: size_t, size: size_t) -> *mut c_void;
+    pub fn memalign(align: size_t, size: size_t) -> *mut c_void;
     pub fn realloc(p: *mut c_void, size: size_t) -> *mut c_void;
 }

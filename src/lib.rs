@@ -1,7 +1,7 @@
 //! A simple global allocator which hooks into `libc`.
 //! Useful when linking `no_std` + `alloc` code into existing embedded C code.
 //!
-//! Uses `aligned_alloc` for allocations, `realloc` for reallocations, and
+//! Uses `memalign` for allocations, `realloc` for reallocations, and
 //! `free` for deallocations.
 //!
 //! ## Example
@@ -32,7 +32,7 @@ pub struct LibcAlloc;
 unsafe impl GlobalAlloc for LibcAlloc {
     #[inline]
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        libc::aligned_alloc(layout.align(), layout.size()).cast()
+        libc::memalign(layout.align(), layout.size()).cast()
     }
 
     #[inline]
